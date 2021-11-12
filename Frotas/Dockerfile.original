@@ -1,0 +1,23 @@
+#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM mcr.microsoft.com/dotnet/aspnet:3.1 AS base
+WORKDIR /app
+EXPOSE 80
+EXPOSE 443
+
+FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
+WORKDIR /src
+COPY ["Frotas/Frotas.csproj", "Frotas/"]
+COPY ["Frotas.Infra/Frotas.Infra.csproj", "Frotas.Infra/"]
+COPY ["Frotas.Domain/Frotas.Domain.csproj", "Frotas.Domain/"]
+RUN dotnet restore "Frotas/Frotas.csproj"
+COPY . .
+WORKDIR "/src/Frotas"
+RUN dotnet build "Frotas.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "Frotas.csproj" -c Release -o /app/publish
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Frotas.dll"]

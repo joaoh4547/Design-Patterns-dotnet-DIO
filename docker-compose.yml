@@ -1,0 +1,7 @@
+version: '3.4'
+
+services:
+  frotas:
+    build:
+      context: .
+      dockerfile: Frotas/Dockerfile
